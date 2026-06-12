@@ -2,8 +2,9 @@
 
 import { ArrowUp, Loader2, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ChatMode } from "@/lib/chatModes";
 
-export type ChatMode = "normal" | "write" | "code";
+export type { ChatMode };
 
 const MODE_KEY = (chatId: string) => `claudeai:mode:${chatId}`;
 
