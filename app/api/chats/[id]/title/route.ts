@@ -34,6 +34,7 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
     const { text } = await generateText({
       model: modelFor(TITLE_MODEL),
       maxRetries: 2,
+      maxOutputTokens: 256,
       prompt: `Summarise this conversation as a 3-6 word title, plain text only, no quotes, no trailing punctuation:\n\n${transcript}`,
     });
 

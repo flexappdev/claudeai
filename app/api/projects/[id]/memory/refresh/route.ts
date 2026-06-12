@@ -49,6 +49,7 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
     const { text } = await generateText({
       model: modelFor(TITLE_MODEL),
       maxRetries: 2,
+      maxOutputTokens: 1024,
       prompt: `You maintain rolling project memory across many conversations.
 
 Project name: ${project.name}

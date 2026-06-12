@@ -98,6 +98,9 @@ export async function POST(req: NextRequest) {
       system,
       messages,
       maxRetries: 3,
+      // Cap output so OpenRouter keys with smaller per-request credit limits
+      // (default key allows ~22K tokens; sonnet's model max is 64K) don't 402.
+      maxOutputTokens: 4096,
       ...(hasTools ? { tools, stopWhen: stepCountIs(5) } : {}),
       onFinish: async ({ text }) => {
         if (!persistenceOk) return;
