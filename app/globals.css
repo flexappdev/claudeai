@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Light theme — claude.ai paper */
+  --color-paper: #F4F3EE;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #FAF9F4;
+  --color-text: #1A1915;
+  --color-text-muted: #6B6A65;
+  --color-border: rgba(0, 0, 0, 0.08);
+
+  /* Accent — Siemens blue */
+  --color-accent: #006699;
+  --color-accent-hover: #005580;
+  --color-accent-tint: rgba(0, 102, 153, 0.10);
+  --color-accent-ring: rgba(0, 102, 153, 0.35);
+  --color-on-accent: #FFFFFF;
+}
+
+.dark {
+  --color-paper: #262624;
+  --color-surface: #30302E;
+  --color-surface-2: #2A2A28;
+  --color-text: #F5F4EF;
+  --color-text-muted: #A6A49E;
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  /* Lift accent for legibility on dark bg */
+  --color-accent: #3399CC;
+  --color-accent-hover: #4DAAD8;
+  --color-accent-tint: rgba(51, 153, 204, 0.16);
+  --color-accent-ring: rgba(51, 153, 204, 0.40);
+  --color-on-accent: #FFFFFF;
+}
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-tint: var(--color-accent-tint);
+  --color-accent-ring: var(--color-accent-ring);
+  --color-on-accent: var(--color-on-accent);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif-display), ui-serif, Georgia, serif;
+  --font-mono: var(--font-mono-code), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 12px;
+  --radius-btn: 8px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+code,
+kbd,
+pre,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--color-accent-tint);
+  color: inherit;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent-ring);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
