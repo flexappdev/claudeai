@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { fetcher } from "@/lib/swr";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { MessageList } from "@/components/chat/MessageList";
-import { Composer, type ChatMode } from "@/components/chat/Composer";
+import { Composer } from "@/components/chat/Composer";
+import type { ChatMode } from "@/lib/chatModes";
 import type { ChatDTO, MessageDTO } from "@/lib/types";
 
 type ChatResponse = { chat: ChatDTO; messages: MessageDTO[] };
@@ -15,16 +16,23 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const router = useRouter();
   const { data, error, mutate } = useSWR<ChatResponse>(`/api/chats/${id}`, fetcher);
-  const [optimistic, setOptimistic] = useState<MessageDTO[]>([]);
+  const [transient, setTransient] = useState<MessageDTO[]>([]);
+  const [streaming, setStreaming] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    setOptimistic([]);
+    setTransient([]);
+    setStreaming(false);
+    setStreamError(null);
   }, [id]);
 
   const onSend = useCallback(
     async (text: string, mode: ChatMode) => {
+      const tempUserId = `tmp-user-${Date.now()}`;
+      const tempAssistantId = `tmp-asst-${Date.now()}`;
       const tempUser: MessageDTO = {
-        _id: `tmp-user-${Date.now()}`,
+        _id: tempUserId,
         chatId: id,
         role: "user",
         content: text,
@@ -32,18 +40,67 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         createdAt: new Date().toISOString(),
       };
       const tempAssistant: MessageDTO = {
-        _id: `tmp-asst-${Date.now()}`,
+        _id: tempAssistantId,
         chatId: id,
         role: "assistant",
-        content: "Streaming endpoint wires up in CC-03. Your message was captured.",
+        content: "",
         artifactIds: [],
         createdAt: new Date().toISOString(),
       };
-      setOptimistic((prev) => [...prev, tempUser, tempAssistant]);
-      void mode;
+      setTransient([tempUser, tempAssistant]);
+      setStreaming(true);
+      setStreamError(null);
+
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+
+      try {
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatId: id, message: text, mode }),
+          signal: ctrl.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j?.error || `Request failed (${res.status})`);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          setTransient((prev) =>
+            prev.map((m) => (m._id === tempAssistantId ? { ...m, content: acc } : m)),
+          );
+        }
+
+        // Streaming done — revalidate to load persisted versions + auto-title.
+        setStreaming(false);
+        abortRef.current = null;
+        setTimeout(() => {
+          void mutate();
+          setTransient([]);
+        }, 400);
+      } catch (err) {
+        if ((err as Error).name === "AbortError") {
+          setStreaming(false);
+          return;
+        }
+        setStreaming(false);
+        setStreamError((err as Error).message);
+      }
     },
-    [id],
+    [id, mutate],
   );
+
+  const onStop = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   if (error) {
     return (
@@ -75,7 +132,9 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const messages = [...data.messages, ...optimistic];
+  // Don't show transient stand-ins for messages that have already been persisted.
+  const persistedCount = data.messages.length;
+  const messages = streaming || transient.length ? [...data.messages, ...transient] : data.messages;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -86,8 +145,27 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4">
         <div className="flex-1 overflow-y-auto">
           <MessageList messages={messages} />
+          {streamError && (
+            <div className="mx-2 my-4 rounded-[var(--radius-card)] border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+              {streamError}{" "}
+              <button
+                type="button"
+                onClick={() => setStreamError(null)}
+                className="ml-2 underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
         </div>
-        <Composer chatId={id} onSend={onSend} />
+        <Composer
+          chatId={id}
+          onSend={onSend}
+          streaming={streaming}
+          onStop={onStop}
+        />
+        {/* Re-key by persisted count to ensure auto-scroll triggers on revalidate */}
+        <span className="hidden" data-persisted-count={persistedCount} />
       </div>
     </div>
   );
