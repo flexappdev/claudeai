@@ -45,18 +45,37 @@ export async function POST(req: NextRequest) {
     const chat = await Chat.findById(body.chatId);
     if (!chat) return apiError("CHAT_NOT_FOUND", "Chat not found", 404);
 
-    await Message.create({
-      chatId: chat._id,
-      role: "user",
-      content: body.message,
-      artifactIds: [],
-    });
+    // Persist user message. If the Mongo cluster is at its collection cap
+    // (Atlas shared-tier 500 limit), the very first write to a missing
+    // collection throws — degrade gracefully so OpenRouter / Anthropic still
+    // stream a response instead of returning 500 for the whole request.
+    let persistenceOk = true;
+    try {
+      await Message.create({
+        chatId: chat._id,
+        role: "user",
+        content: body.message,
+        artifactIds: [],
+      });
+    } catch (err) {
+      persistenceOk = false;
+      console.warn("[stream] user message persist failed — degraded mode:", (err as Error).message);
+    }
 
-    const tail = await Message.find({ chatId: chat._id })
-      .sort({ createdAt: -1 })
-      .limit(MAX_HISTORY)
-      .lean();
-    tail.reverse();
+    let tail: { role: string; content: string }[] = [];
+    try {
+      tail = await Message.find({ chatId: chat._id })
+        .sort({ createdAt: -1 })
+        .limit(MAX_HISTORY)
+        .lean();
+      tail.reverse();
+    } catch {
+      // No history available — first turn or persistence broken.
+      tail = [{ role: "user", content: body.message }];
+    }
+    if (tail.length === 0) {
+      tail = [{ role: "user", content: body.message }];
+    }
 
     // For history, strip [artifact:id] tokens back into a brief reference so
     // the model still sees something coherent for prior turns.
@@ -81,6 +100,7 @@ export async function POST(req: NextRequest) {
       maxRetries: 3,
       ...(hasTools ? { tools, stopWhen: stepCountIs(5) } : {}),
       onFinish: async ({ text }) => {
+        if (!persistenceOk) return;
         try {
           const { artifacts, text: tokenized } = extractArtifacts(text);
 
