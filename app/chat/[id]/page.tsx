@@ -39,6 +39,16 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     setVersionByIdentifier({});
   }, [id]);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && openIdentifier) {
+        setOpenIdentifier(null);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openIdentifier]);
+
   const artifactByIdentifier = useMemo(() => {
     const m = new Map<string, ArtifactDTO>();
     (artData?.artifacts ?? []).forEach((a) => {
