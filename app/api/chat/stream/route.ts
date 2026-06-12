@@ -9,6 +9,7 @@ import { isChatMode, type ChatMode } from "@/lib/chatModes";
 import { assembleSystemPrompt } from "@/lib/systemPrompt";
 import { modelFor, isAnthropicConfigured } from "@/lib/anthropic";
 import { extractArtifacts } from "@/lib/artifacts/parse";
+import { loadProjectContext } from "@/lib/projects/context";
 import type { ModelId } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -62,7 +63,8 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
 
-    const system = assembleSystemPrompt({ mode });
+    const project = await loadProjectContext(chat.projectId ? String(chat.projectId) : null);
+    const system = assembleSystemPrompt({ mode, project });
 
     const result = streamText({
       model: modelFor(chat.model as ModelId),

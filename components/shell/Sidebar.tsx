@@ -19,6 +19,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const COLLAPSED_KEY = "claudeai:sidebar:collapsed";
 
 type RecentChat = { _id: string; title: string; updatedAt: string };
+type RecentProject = { _id: string; name: string; color: string };
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -48,6 +49,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [recents, setRecents] = useState<RecentChat[]>([]);
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
 
   useEffect(() => {
     const v = window.localStorage.getItem(COLLAPSED_KEY);
@@ -63,6 +65,14 @@ export function Sidebar() {
       })
       .catch(() => {
         if (!cancelled) setRecents([]);
+      });
+    fetch("/api/projects")
+      .then((r) => (r.ok ? r.json() : { projects: [] }))
+      .then((d: { projects?: RecentProject[] }) => {
+        if (!cancelled) setRecentProjects((d.projects ?? []).slice(0, 5));
+      })
+      .catch(() => {
+        if (!cancelled) setRecentProjects([]);
       });
     return () => {
       cancelled = true;
@@ -186,6 +196,29 @@ export function Sidebar() {
               />
             ))}
           </SidebarSection>
+
+          {!collapsed && recentProjects.length > 0 && (
+            <SidebarSection label="Recent projects" collapsed={collapsed}>
+              {recentProjects.map((p) => (
+                <Link
+                  key={p._id}
+                  href={`/projects/${p._id}`}
+                  className={[
+                    "focus-ring group flex items-center gap-2 truncate rounded-md px-2 py-1.5 text-sm",
+                    pathname === `/projects/${p._id}`
+                      ? "bg-[var(--color-accent-tint)] text-[var(--color-text)]"
+                      : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
+                  ].join(" ")}
+                >
+                  <span
+                    className="inline-block h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: p.color }}
+                  />
+                  <span className="truncate">{p.name}</span>
+                </Link>
+              ))}
+            </SidebarSection>
+          )}
 
           {!collapsed && (
             <SidebarSection label="Recents" collapsed={collapsed}>
