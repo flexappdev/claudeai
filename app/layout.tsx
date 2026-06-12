@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from "@/components/shell/ThemeProvider";
 import { Sidebar } from "@/components/shell/Sidebar";
+import { CommandPalette } from "@/components/ui/CommandPalette";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,7 +22,10 @@ const monoCode = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "claudeai",
+  title: {
+    default: "claudeai",
+    template: "%s — claudeai",
+  },
   description:
     "Chat, projects, artifacts, skills, connectors — claude.ai reproduced as a Next 16 fleet site.",
 };
@@ -52,6 +57,18 @@ export default function RootLayout({
             <Sidebar />
             <main className="flex min-h-screen flex-1 flex-col">{children}</main>
           </div>
+          <CommandPalette />
+          <Toaster
+            position="bottom-right"
+            theme="system"
+            toastOptions={{
+              style: {
+                background: "var(--color-surface)",
+                color: "var(--color-text)",
+                border: "1px solid var(--color-border)",
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>
