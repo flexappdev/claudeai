@@ -3,10 +3,12 @@ import { streamText, type ModelMessage } from "ai";
 import { getDb } from "@/lib/db";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
+import { Artifact } from "@/models/Artifact";
 import { apiError, isValidObjectId, readJson } from "@/lib/api";
 import { isChatMode, type ChatMode } from "@/lib/chatModes";
 import { assembleSystemPrompt } from "@/lib/systemPrompt";
 import { modelFor, isAnthropicConfigured } from "@/lib/anthropic";
+import { extractArtifacts } from "@/lib/artifacts/parse";
 import type { ModelId } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -40,7 +42,6 @@ export async function POST(req: NextRequest) {
     const chat = await Chat.findById(body.chatId);
     if (!chat) return apiError("CHAT_NOT_FOUND", "Chat not found", 404);
 
-    // Persist the user message immediately so refreshes see it.
     await Message.create({
       chatId: chat._id,
       role: "user",
@@ -48,13 +49,14 @@ export async function POST(req: NextRequest) {
       artifactIds: [],
     });
 
-    // Load tail history (already includes the user message we just wrote).
     const tail = await Message.find({ chatId: chat._id })
       .sort({ createdAt: -1 })
       .limit(MAX_HISTORY)
       .lean();
     tail.reverse();
 
+    // For history, strip [artifact:id] tokens back into a brief reference so
+    // the model still sees something coherent for prior turns.
     const messages: ModelMessage[] = tail.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -69,16 +71,42 @@ export async function POST(req: NextRequest) {
       maxRetries: 3,
       onFinish: async ({ text }) => {
         try {
-          await Message.create({
+          const { artifacts, text: tokenized } = extractArtifacts(text);
+
+          // Save the assistant message FIRST so we have a messageId for the artifacts.
+          const assistantMessage = await Message.create({
             chatId: chat._id,
             role: "assistant",
-            content: text,
+            content: tokenized,
             artifactIds: [],
           });
+
+          if (artifacts.length) {
+            const ids: typeof assistantMessage._id[] = [];
+            for (const a of artifacts) {
+              const prior = await Artifact.findOne({ chatId: chat._id, identifier: a.identifier })
+                .sort({ version: -1 })
+                .lean();
+              const version = (prior?.version ?? 0) + 1;
+              const saved = await Artifact.create({
+                chatId: chat._id,
+                messageId: assistantMessage._id,
+                identifier: a.identifier,
+                title: a.title,
+                type: a.type,
+                language: a.language,
+                content: a.content,
+                version,
+              });
+              ids.push(saved._id);
+            }
+            assistantMessage.artifactIds = ids;
+            await assistantMessage.save();
+          }
+
           chat.updatedAt = new Date();
           await chat.save();
 
-          // Auto-title after the first assistant reply.
           const count = await Message.countDocuments({ chatId: chat._id });
           if (count === 2 && chat.title === "New chat") {
             void fetch(

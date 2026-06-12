@@ -2,9 +2,17 @@
 
 import { useEffect, useRef } from "react";
 import { MessageBubble } from "./MessageBubble";
-import type { MessageDTO } from "@/lib/types";
+import type { ArtifactDTO, MessageDTO } from "@/lib/types";
 
-export function MessageList({ messages }: { messages: MessageDTO[] }) {
+export function MessageList({
+  messages,
+  artifactMap,
+  onOpenArtifact,
+}: {
+  messages: MessageDTO[];
+  artifactMap?: Map<string, ArtifactDTO>;
+  onOpenArtifact?: (identifier: string) => void;
+}) {
   const endRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -23,7 +31,12 @@ export function MessageList({ messages }: { messages: MessageDTO[] }) {
   return (
     <div className="flex flex-col gap-6 px-2 py-6">
       {messages.map((m) => (
-        <MessageBubble key={m._id} message={m} />
+        <MessageBubble
+          key={m._id}
+          message={m}
+          artifactMap={artifactMap}
+          onOpenArtifact={onOpenArtifact}
+        />
       ))}
       <div ref={endRef} />
     </div>
