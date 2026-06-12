@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { streamText, type ModelMessage } from "ai";
+import { stepCountIs, streamText, type ModelMessage } from "ai";
 import { getDb } from "@/lib/db";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
@@ -11,6 +11,7 @@ import { modelFor, isAnthropicConfigured } from "@/lib/anthropic";
 import { extractArtifacts } from "@/lib/artifacts/parse";
 import { loadProjectContext } from "@/lib/projects/context";
 import { getEnabledSkills, matchSkills } from "@/lib/skills";
+import { buildConnectorTools } from "@/lib/connectors/tools";
 import type { ModelId } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -64,18 +65,21 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
 
-    const [project, enabledSkills, matchedSkills] = await Promise.all([
+    const [project, enabledSkills, matchedSkills, tools] = await Promise.all([
       loadProjectContext(chat.projectId ? String(chat.projectId) : null),
       getEnabledSkills(),
       matchSkills(body.message),
+      buildConnectorTools(),
     ]);
     const system = assembleSystemPrompt({ mode, project, enabledSkills, matchedSkills });
 
+    const hasTools = Object.keys(tools).length > 0;
     const result = streamText({
       model: modelFor(chat.model as ModelId),
       system,
       messages,
       maxRetries: 3,
+      ...(hasTools ? { tools, stopWhen: stepCountIs(5) } : {}),
       onFinish: async ({ text }) => {
         try {
           const { artifacts, text: tokenized } = extractArtifacts(text);
