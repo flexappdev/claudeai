@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.84",
     "ai": "^6.0.203",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.460.0",
     "mermaid": "^11.15.0",
     "mongoose": "^8.8.0",
