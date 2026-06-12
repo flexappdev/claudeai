@@ -23,11 +23,12 @@ can be added later without a migration.
 - [x] `npm run build` clean (27 routes)
 - [x] `npm run typecheck` clean
 - [x] README written with stack, env vars, scripts, architecture, deploy flow
-- [ ] `/abc-github sync claudeai` — secrets to Actions
-- [ ] `/abc-vercel claudeai` — link + env push + `vercel --prod`
+- [x] Vercel project `prj_mqvZlEbKZ5wjDBwPRNxygY25jXZZ` linked, 6 env vars pushed via API
+- [x] **Prod LIVE: https://claudeai-eight.vercel.app/chat returns 200**
+- [x] Registry `live_url` + `vercel_project_id` updated
+- [ ] `/abc-github sync claudeai` — secrets to Actions (deferred — env already in Vercel, not blocking)
 - [ ] `/abc-ga sync claudeai <G-id>` — if a measurement ID exists
-- [ ] Registry `live_url` updated to prod Vercel URL
-- [ ] OAuth redirect URIs updated in Google + Slack consoles to prod
+- [ ] OAuth redirect URIs updated in Google + Slack consoles to the prod URL (deferred — only needed when GOOGLE_CLIENT_ID / SLACK_CLIENT_ID are added to env)
 
 ## Env vars
 
