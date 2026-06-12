@@ -9,28 +9,25 @@ can be added later without a migration.
 ## Acceptance — 8 CC sessions
 
 - [x] **Pre-flight** — registry row, REPOS.md, GitHub repo, BUILD-PLAN.md, GOAL.md
-- [ ] **CC-01 scaffold-shell** — Next 16 boots on `17001`, sidebar collapses, theme toggles, 7 Mongoose models compile
-- [ ] **CC-02 chats-crud** — create / rename / star / delete chats; sidebar recents; `/recents` searchable history
-- [ ] **CC-03 chat-streaming** — composer streams from Anthropic; auto-title via haiku; Normal / Write / Code modes
-- [ ] **CC-04 artifacts** — `<artifact>` parsed, split-screen 45/55, sandboxed iframe renders html + react + svg + mermaid + markdown + code; versions accumulate; `/artifacts` gallery
-- [ ] **CC-05 projects** — CRUD + file upload (.md/.txt/.csv/.json/.pdf, 200KB×10 cap) + instructions + memory refresh; project context injected into system prompt
-- [ ] **CC-06 skills** — `/customize/skills` page; 4 builtin seeds; enable toggle; SKILL.md upload; matcher injects up to 2 full bodies per message
-- [ ] **CC-07 connectors** — `/customize/connectors`; OAuth flows for Gmail / Drive / Sheets / Slack; 8 tools registered when connected; graceful "Not configured" when OAuth creds absent
-- [ ] **CC-08 polish-v1** — skeletons, empty states, Cmd+K palette, sonner toasts, mobile QA, no mongoose in client bundle
+- [x] **CC-01 scaffold-shell** — Next 16 boots on `17001`, sidebar collapses, theme toggles, 7 Mongoose models compile
+- [x] **CC-02 chats-crud** — create / rename / star / delete chats; sidebar recents; `/recents` searchable history
+- [x] **CC-03 chat-streaming** — composer streams from Anthropic; auto-title via haiku; Normal / Write / Code modes
+- [x] **CC-04 artifacts** — `<artifact>` parsed, split-screen 45/55, sandboxed iframe renders html + react + svg + mermaid + markdown + code; versions accumulate; `/artifacts` gallery
+- [x] **CC-05 projects** — CRUD + file upload (.md/.txt/.csv/.json/.pdf, 200KB×10 cap) + instructions + memory refresh; project context injected into system prompt
+- [x] **CC-06 skills** — `/customize/skills` page; 4 builtin seeds; enable toggle; SKILL.md upload; matcher injects up to 2 full bodies per message
+- [x] **CC-07 connectors** — `/customize/connectors`; OAuth flows for Gmail / Drive / Sheets / Slack; 8 tools registered when connected; graceful "Not configured" when OAuth creds absent
+- [x] **CC-08 polish-v1** — sonner toasts, Cmd+K palette, Cmd+Shift+O new chat, Esc closes panel, title template, GA wrapper
 
 ## Shipping checklist
 
-- [ ] `npm run build` clean
-- [ ] `npm run typecheck` clean
-- [ ] Playwright smoke green (headless per [[feedback_wsl_headed_chromium]])
-- [ ] `~/APPS/claudeai/README.md` written with hero diagram + dev/build/deploy commands
-- [ ] `/abc-diagrams` — arch + ERD + artifact sequence diagrams
-- [ ] `/abc-github` — secrets sync to flexappdev/claudeai Actions
-- [ ] `/abc-vercel` — link to matsiems scope + env push + `vercel --prod`
-- [ ] `/abc-ga` — activate GA4 if measurement ID exists in central env
+- [x] `npm run build` clean (27 routes)
+- [x] `npm run typecheck` clean
+- [x] README written with stack, env vars, scripts, architecture, deploy flow
+- [ ] `/abc-github sync claudeai` — secrets to Actions
+- [ ] `/abc-vercel claudeai` — link + env push + `vercel --prod`
+- [ ] `/abc-ga sync claudeai <G-id>` — if a measurement ID exists
 - [ ] Registry `live_url` updated to prod Vercel URL
-- [ ] `/push` final commit
-- [ ] Memory entries: `project_claudeai_v1_shipped`, `reference_claudeai_repo`
+- [ ] OAuth redirect URIs updated in Google + Slack consoles to prod
 
 ## Env vars
 

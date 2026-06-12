@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from "@/components/shell/ThemeProvider";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { CommandPalette } from "@/components/ui/CommandPalette";
+import { GA_ID, isAnalyticsEnabled } from "@/lib/analytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -50,6 +52,26 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
+        {isAnalyticsEnabled() && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+            />
+            <Script
+              id="ga-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}', { anonymize_ip: true });
+`,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="min-h-full">
         <ThemeProvider>
