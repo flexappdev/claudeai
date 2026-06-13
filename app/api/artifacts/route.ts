@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Types } from "mongoose";
 import { getDb } from "@/lib/db";
 import { Artifact } from "@/models/Artifact";
 import { apiError, apiOk, isValidObjectId } from "@/lib/api";
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
     const filter: Record<string, unknown> = {};
     if (chatId) {
       if (!isValidObjectId(chatId)) return apiError("INVALID_CHAT_ID", "Invalid chatId", 400);
-      filter.chatId = chatId;
+      // Aggregate $match needs an ObjectId here — Mongoose only auto-coerces in find().
+      filter.chatId = new Types.ObjectId(chatId);
     }
 
     // Latest version per (chatId, identifier).
