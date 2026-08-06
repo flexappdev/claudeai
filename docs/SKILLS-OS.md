@@ -10,10 +10,10 @@ Verified on 6 August 2026:
 
 | Metric | Count |
 |---|---:|
-| Physical definitions | 483 |
-| Canonical skills | 332 |
+| Physical definitions | 484 |
+| Canonical skills | 333 |
 | Claude Code | 199 |
-| Codex | 174 |
+| Codex | 175 |
 | claudeai library/catalogue | 16 |
 | Cross-platform | 56 |
 
