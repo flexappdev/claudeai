@@ -26,6 +26,7 @@ Totals are live and may change as skills are added or removed.
 - Parses only skill metadata for the index and merges exact slug matches.
 - Caches filesystem results for 30 seconds.
 - Uses bounded directory traversal so large repositories do not produce partial, non-deterministic results.
+- Publishes a sanitized metadata-only snapshot to MongoDB for cloud runtimes that cannot access local skill folders. Filesystem paths and playbook bodies are never included.
 - “Switch on here” imports a selected playbook into the local claudeai library, enables it, creates a chat, and prepares its slash invocation.
 - Claude Code and Codex actions copy their native `/skill` or `$skill` invocation.
 
