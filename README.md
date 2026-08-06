@@ -30,7 +30,7 @@ v1 is single-user (every model carries `userId: "mat"` for forward-compat) and u
 | Connectors | googleapis + @slack/web-api with AES-256-GCM token encryption |
 | Deploy | Vercel (matsiems team) |
 
-## Features (CC-01..CC-08)
+## Features (CC-01..CC-09)
 
 - **CC-01 scaffold-shell** — Next 16 + Tailwind v4, design system in `app/globals.css`, collapsible 280↔64px sidebar, no-flash theme toggle, 7 Mongoose models, cached connection helper.
 - **CC-02 chats-crud** — full chat lifecycle (create / rename / star / move-to-project / delete with cascade), markdown rendering with sugar-high syntax highlight, debounced searchable `/recents` grouped by date.
@@ -40,6 +40,7 @@ v1 is single-user (every model carries `userId: "mat"` for forward-compat) and u
 - **CC-06 skills** — 4 builtin playbooks (PRD, Proposal, Sprint, Status report) seeded on first visit; user-created skills via frontmatter `SKILL.md` upload; `/<slug>` invocation injects full playbook body, plain mentions inject only the brief.
 - **CC-07 connectors** — Gmail / Drive / Sheets / Slack OAuth with refresh-token plumbing and AES-256-GCM at-rest encryption; 8 AI-SDK tools registered conditionally; `stopWhen: stepCountIs(5)`; "Not configured" pills when env vars are absent.
 - **CC-08 polish-v1** — Cmd+K command palette across chats / projects / skills + actions, Cmd+Shift+O new chat, Esc closes artifact panel, sonner toasts, metadata title template, GA4 wrapper ready for `/abc-ga sync`.
+- **CC-09 Skills OS** — live, read-only discovery across global Claude Code, project-local Claude, personal Codex, Codex plugin, agent, and Anthropic catalogue roots; canonical slug deduplication; platform/category/search filters; one-click import + activation in claudeai; prepared skill chats; native Claude Code and Codex invocation copying. Private context roots are explicitly excluded.
 
 ## Quickstart
 
@@ -93,7 +94,7 @@ app/
 ├── recents/               searchable history grouped by date
 ├── projects/, projects/[id]/   gallery + 3-tab detail
 ├── artifacts/, artifacts/[id]/ gallery + full-width viewer
-├── customize/skills/      tabbed (All / Enabled / My skills) with SKILL.md import
+├── customize/skills/      Skills OS — unified Claude.ai / Claude Code / Codex command deck
 ├── customize/connectors/  card per service with Connect / Test / Disconnect
 └── settings/              theme + default model
 components/
@@ -112,6 +113,7 @@ lib/
 ├── projects/              context loader + multipart parser (pdf-parse v2)
 ├── connectors/            crypto + google + slack + tools (8 AI-SDK tools)
 ├── skills.ts              enabled briefs + matched-body injection
+├── skillIndex.ts          bounded filesystem scan + canonical cross-platform registry
 └── builtinSkills.ts       4 real playbooks (PRD, Proposal, Sprint, Status)
 models/                    7 Mongoose schemas with indexes
 docs/

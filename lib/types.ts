@@ -69,6 +69,20 @@ export type SkillDTO = {
   createdAt: string;
 };
 
+export type SkillPlatform = "claudeAi" | "claudeCode" | "codex";
+
+export type SkillIndexEntry = {
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  platforms: Record<SkillPlatform, boolean>;
+  sources: string[];
+  definitions: number;
+  appSkillId: string | null;
+  appEnabled: boolean;
+};
+
 export type ConnectorDTO = {
   _id: string;
   userId: string;

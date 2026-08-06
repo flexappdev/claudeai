@@ -10,6 +10,7 @@ const MODE_KEY = (chatId: string) => `claudeai:mode:${chatId}`;
 
 export type ComposerProps = {
   chatId: string;
+  initialText?: string;
   disabled?: boolean;
   streaming?: boolean;
   onSend: (text: string, mode: ChatMode) => void | Promise<void>;
@@ -18,8 +19,8 @@ export type ComposerProps = {
 
 const MAX_LINES = 10;
 
-export function Composer({ chatId, disabled, streaming, onSend, onStop }: ComposerProps) {
-  const [text, setText] = useState("");
+export function Composer({ chatId, initialText = "", disabled, streaming, onSend, onStop }: ComposerProps) {
+  const [text, setText] = useState(initialText);
   const [mode, setMode] = useState<ChatMode>("normal");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 

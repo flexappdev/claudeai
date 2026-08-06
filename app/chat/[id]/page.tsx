@@ -15,8 +15,15 @@ import { detectOpenArtifact } from "@/lib/artifacts/parse";
 type ChatResponse = { chat: ChatDTO; messages: MessageDTO[] };
 type ArtifactsResponse = { artifacts: ArtifactDTO[] };
 
-export default function ChatDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ChatDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ draft?: string }>;
+}) {
   const { id } = use(params);
+  const { draft = "" } = use(searchParams);
   const router = useRouter();
   const { data, error, mutate } = useSWR<ChatResponse>(`/api/chats/${id}`, fetcher);
   const { data: artData, mutate: mutateArtifacts } = useSWR<ArtifactsResponse>(
@@ -207,7 +214,13 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
           </div>
-          <Composer chatId={id} onSend={onSend} streaming={streaming} onStop={onStop} />
+          <Composer
+            chatId={id}
+            initialText={draft}
+            onSend={onSend}
+            streaming={streaming}
+            onStop={onStop}
+          />
         </div>
       </div>
 

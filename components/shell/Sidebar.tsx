@@ -40,7 +40,7 @@ const NAV_ITEMS: { label: string; href: string; icon: React.ComponentType<{ clas
 ];
 
 const CUSTOMIZE_ITEMS: { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { label: "Skills", href: "/customize/skills", icon: Sparkles },
+  { label: "Skills OS", href: "/customize/skills", icon: Sparkles },
   { label: "Connectors", href: "/customize/connectors", icon: Wrench },
 ];
 
